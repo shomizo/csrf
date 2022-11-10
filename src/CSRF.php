@@ -59,9 +59,10 @@ class CSRF {
 	 *
 	 * @param array $request_data - your whole POST/GET array - will index in with the token name to get the token.
 	 * @param string $token_name - defaults to the default token name
+	 * @param bool $renew_token - defaults true
 	 * @return bool
 	 */
-	public static function validate($request_data = array(), $token_name = self::TOKEN_NAME)
+	public static function validate($request_data = array(), $token_name = self::TOKEN_NAME, $renew_token = true)
 	{
 		if (empty($_SESSION[$token_name])) {
 			static::generateToken($token_name);
@@ -70,13 +71,26 @@ class CSRF {
 			return false;
 		} else {
 			if(static::compare($request_data[$token_name], static::getToken($token_name))){
-				static::generateToken($token_name);
+				if ($renew_token) static::generateToken($token_name);
 				return true;
 			} else {
 				return false;
 			}
 		}
 	}
+
+	/**
+	 * Validate the token without renew token.  If there's not one yet, it will set one and return false.
+	 *
+	 * @param array $request_data - your whole POST/GET array - will index in with the token name to get the token.
+	 * @param string $token_name - defaults to the default token name
+	 * @return bool
+	 */
+	public static function validateWithoutRenewToken($request_data = array(), $token_name = self::TOKEN_NAME) {
+		return self::validate($request_data, $token_name, false);
+	}
+
+
 
 	/**
 	 * Get a hidden input string with the token/token name in it.
